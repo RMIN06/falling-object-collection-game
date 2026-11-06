@@ -5,6 +5,22 @@ game_title:        db 'COIN CATCH' ; title text
 game_title_length: dw 10           ; number of characters in the title
 time_left:         dw 120          ; two minutes in seconds
 
+coin_small:        db '.-.'       ; small coin, worth 5 points
+                   db '|o|'
+                   db "'-'"
+
+coin_gold:         db '.-.'       ; gold coin, worth 10 points
+                   db '|$|'
+                   db "'-'"
+
+diamond:           db ' ^ '       ; diamond, worth 15 points
+                   db '< >'
+                   db ' v '
+
+bomb:              db ' * '       ; bomb ends the game when caught
+                   db '(X)'
+                   db ' ~ '
+
 bucket:            db '\ /'       ; bucket rim
                    db '| |'       ; bucket sides
                    db '\_/'       ; bucket base
@@ -301,6 +317,46 @@ start:
         mov ax, 9               ; should show as 00:09
         push ax
         call print_time
+
+        mov ax, 12              ; small coin starts at column 12, row 6
+        push ax
+        mov ax, 6
+        push ax
+        mov ax, 0x06            ; brown on black
+        push ax
+        mov ax, coin_small      ; address of the small coin sprite
+        push ax
+        call draw_object
+
+        mov ax, 28              ; gold coin starts at column 28, row 6
+        push ax
+        mov ax, 6
+        push ax
+        mov ax, 0x0e            ; bright yellow on black
+        push ax
+        mov ax, coin_gold       ; address of the gold coin sprite
+        push ax
+        call draw_object
+
+        mov ax, 44              ; diamond starts at column 44, row 6
+        push ax
+        mov ax, 6
+        push ax
+        mov ax, 0x0b            ; bright cyan on black
+        push ax
+        mov ax, diamond         ; address of the diamond sprite
+        push ax
+        call draw_object
+
+        mov ax, 60              ; bomb starts at column 60, row 6
+        push ax
+        mov ax, 6
+        push ax
+        mov ax, 0x4f            ; bright white on red
+        push ax
+        mov ax, bomb            ; address of the bomb sprite
+        push ax
+        call draw_object
 
         mov ax, 38              ; bucket starts at column 38, row 22
         push ax

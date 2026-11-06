@@ -160,7 +160,7 @@ Tick a box here when the step is done and committed. Commit wording is in `docs/
 - [x] **Step 2: `print_string`.** Add the five-parameter routine. Test by printing `COIN CATCH` in yellow at (35, 4). *Student sees:* the title in the middle.
 - [x] **Step 3: `print_number`.** Print `125` at (10, 10), then `0` and `45821` to prove one-digit and five-digit numbers work. *Student sees:* the numbers.
 - [x] **Step 4: `print_time`.** Add `time_left` and print `120` as `02:00`, then test `75` as `01:15` and `9` as `00:09`. *Student sees:* correctly formatted times.
-- [ ] **Step 5: `draw_object` with the bucket.** Add the `bucket` sprite and draw it at (38, 22). *Student sees:* a green 3x3 bucket at the bottom center.
+- [x] **Step 5: `draw_object` with the bucket.** Add the `bucket` sprite and draw it at (38, 22). *Student sees:* a green 3x3 bucket at the bottom center.
 - [ ] **Step 6: the other sprites.** Add `coin_small`, `coin_gold`, `diamond`, `bomb`. Draw all five in a quick test. Check all five fit in 3x3 and look different. *Student sees:* five distinct objects.
 - [ ] **Step 7: game screen.** Write `draw_hud`, `show_demo_objects` and `show_game_screen` following section 4. *Student sees:* the full game screen with timer `02:00`, score `0` at the top-right, the four demo objects with labels, and the bucket.
 - [ ] **Step 8: start screen.** Write `wait_for_enter` and `show_start_screen`. *Student sees:* the title screen, and nothing happens until Enter is pressed.
