@@ -164,7 +164,7 @@ Tick a box here when the step is done and committed. Commit wording is in `docs/
 - [x] **Step 6: the other sprites.** Add `coin_small`, `coin_gold`, `diamond`, `bomb`. Draw all five in a quick test. Check all five fit in 3x3 and look different. *Student sees:* five distinct objects.
 - [x] **Step 7: game screen.** Write `draw_hud`, `show_demo_objects` and `show_game_screen` following section 4. *Student sees:* the full game screen with timer `02:00`, score `0` at the top-right, the four demo objects with labels, and the bucket.
 - [x] **Step 8: start screen.** Write `wait_for_enter` and `show_start_screen`. *Student sees:* the title screen, and nothing happens until Enter is pressed.
-- [ ] **Step 9: end screen.** Write `show_end_screen`. *Student sees:* GAME OVER and the final score.
+- [x] **Step 9: end screen.** Write `show_end_screen`. *Student sees:* GAME OVER and the final score.
 - [ ] **Step 10: connect the flow.** In `start:` call: `show_start_screen`, `wait_for_enter`, `show_game_screen`, `wait_for_enter`, set `score` to the demo value `125`, `show_end_screen`, `wait_for_enter`, exit. *Student sees:* the whole Phase 1 flow from start to end.
 - [ ] **Step 11: final check.** Read the whole file once. Make sure every subroutine has its comment block, names are meaningful, and `check_rules.sh` prints `OK`. Walk through the checklist below and tell the student which items pass. Update `README.md` if anything changed. *Student sees:* the same game, tidier code.
 

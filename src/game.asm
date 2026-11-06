@@ -737,7 +737,14 @@ show_end_screen:
         ret
 
 start:
-        call show_end_screen     ; show the end screen for this step
+        call show_start_screen   ; draw the title and controls
+        call wait_for_enter      ; start the demo when Enter is pressed
+        call show_game_screen    ; draw the timer, score, and objects
+        call wait_for_enter      ; advance to the end screen
+
+        mov word [score], 125    ; demo score to show a multi-digit result
+        call show_end_screen     ; show GAME OVER and the final score
+        call wait_for_enter      ; wait for Enter before returning to DOS
 
         mov ax, 0x4c00          ; choose the DOS exit service with exit code 0
         int 0x21                ; return to the DOS prompt
