@@ -5,6 +5,10 @@ game_title:        db 'COIN CATCH' ; title text
 game_title_length: dw 10           ; number of characters in the title
 time_left:         dw 120          ; two minutes in seconds
 
+bucket:            db '\ /'       ; bucket rim
+                   db '| |'       ; bucket sides
+                   db '\_/'       ; bucket base
+
 ; Clear the 80-column, 25-row text screen.
 ; Parameters: none.
 ; Saves es, ax, and di.
@@ -175,6 +179,54 @@ print_time:
         pop bp
         ret 8                   ; remove the four two-byte parameters
 
+; Draw a three-column, three-row object with the given color.
+; Push x, y, attribute, and sprite address in that order.
+; Saves bp, es, ax, cx, dx, si, and di.
+draw_object:
+        push bp                 ; set up bp to read the parameters
+        mov bp, sp
+        push es                 ; save the other registers we use
+        push ax
+        push cx
+        push dx
+        push si
+        push di
+
+        mov ax, 0xb800          ; point es to color text video memory
+        mov es, ax
+        mov al, 80              ; each row has 80 columns
+        mul byte [bp+8]         ; multiply by y to reach the start of the row
+        add ax, [bp+10]         ; add x to reach the requested column
+        shl ax, 1               ; each screen cell takes two bytes
+        mov di, ax              ; di points to the top-left cell of the sprite
+
+        mov si, [bp+4]          ; si points to the first sprite character
+        mov ah, [bp+6]          ; use the same attribute for all nine cells
+        mov dx, 3               ; the sprite has three rows
+        cld                     ; lodsb should move forward through the sprite
+
+next_object_row:
+        mov cx, 3               ; each sprite row has three columns
+
+next_object_column:
+        lodsb                   ; read the next sprite character into al
+        mov [es:di], ax         ; write the character and attribute together
+        add di, 2               ; move to the next screen cell
+        loop next_object_column
+
+        add di, 154             ; skip the other 77 cells to reach the next row
+        dec dx                  ; one fewer row left to draw
+        jnz next_object_row
+
+        pop di                  ; restore the registers in reverse order
+        pop si
+        pop dx
+        pop cx
+        pop ax
+        pop es
+        pop bp
+        ret 8                   ; remove the four two-byte parameters
+
 start:
         call clear_screen       ; clear the screen before drawing the title
 
@@ -249,6 +301,16 @@ start:
         mov ax, 9               ; should show as 00:09
         push ax
         call print_time
+
+        mov ax, 38              ; bucket starts at column 38, row 22
+        push ax
+        mov ax, 22
+        push ax
+        mov ax, 0x0a            ; bright green on black
+        push ax
+        mov ax, bucket          ; address of the nine bucket characters
+        push ax
+        call draw_object
 
         mov ax, 0x4c00          ; choose the DOS exit service with exit code 0
         int 0x21                ; return to the DOS prompt
