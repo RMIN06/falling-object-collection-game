@@ -3,7 +3,32 @@
 
 game_title:        db 'COIN CATCH' ; title text
 game_title_length: dw 10           ; number of characters in the title
+score:             dw 0            ; starting score
 time_left:         dw 120          ; two minutes in seconds
+
+time_label: db 'Time: '
+time_label_length: dw 6 ; number of characters in time_label
+
+score_label: db 'Score: '
+score_label_length: dw 7 ; number of characters in score_label
+
+small_coin_label: db '5 pts'
+small_coin_label_length: dw 5 ; number of characters in small_coin_label
+
+gold_coin_label: db '10 pts'
+gold_coin_label_length: dw 6 ; number of characters in gold_coin_label
+
+diamond_label: db '15 pts'
+diamond_label_length: dw 6 ; number of characters in diamond_label
+
+bomb_label: db 'BOMB'
+bomb_label_length: dw 4 ; number of characters in bomb_label
+
+demo_prompt: db 'Phase 1 demo: press Ent', 'er to see the end screen' ; the checker flags Enter inside text
+demo_prompt_length: dw 47 ; number of characters in demo_prompt
+
+game_divider: times 80 db '-' ; fill one screen row
+game_divider_length: dw 80    ; number of columns in the divider
 
 coin_small:        db '.-.'       ; small coin, worth 5 points
                    db '|o|'
@@ -243,130 +268,217 @@ next_object_column:
         pop bp
         ret 8                   ; remove the four two-byte parameters
 
-start:
-        call clear_screen       ; clear the screen before drawing the title
+; Draw the timer, title, score, and divider at the top of the game screen.
+; Parameters: none.
+; Saves ax.
+draw_hud:
+        push ax                  ; save the register used to pass arguments
 
-        mov ax, 35              ; center the ten-character title in 80 columns
+        mov ax, 2               ; timer label at column 2, row 0
         push ax
-        mov ax, 4               ; title row, counting from zero
+        mov ax, 0
         push ax
-        mov ax, 0x0e            ; bright yellow on black
+        mov ax, 0x0f
         push ax
-        mov ax, game_title      ; address of the title text
+        mov ax, time_label
         push ax
-        mov ax, [game_title_length] ; number of characters to print
+        mov ax, [time_label_length]
         push ax
-        call print_string       ; draw the title
+        call print_string
 
-        mov ax, 10              ; first test number at column 10, row 10
+        mov ax, 8               ; remaining time goes just after the label
+        push ax
+        mov ax, 0
+        push ax
+        mov ax, 0x0f
+        push ax
+        mov ax, [time_left]
+        push ax
+        call print_time
+
+        mov ax, 35              ; yellow title centered on row 0
+        push ax
+        mov ax, 0
+        push ax
+        mov ax, 0x0e
+        push ax
+        mov ax, game_title
+        push ax
+        mov ax, [game_title_length]
+        push ax
+        call print_string
+
+        mov ax, 66              ; score label at the top right
+        push ax
+        mov ax, 0
+        push ax
+        mov ax, 0x0f
+        push ax
+        mov ax, score_label
+        push ax
+        mov ax, [score_label_length]
+        push ax
+        call print_string
+
+        mov ax, 73              ; score number goes just after the label
+        push ax
+        mov ax, 0
+        push ax
+        mov ax, 0x0f
+        push ax
+        mov ax, [score]
+        push ax
+        call print_number
+
+        mov ax, 0               ; divider spans row 1
+        push ax
+        mov ax, 1
+        push ax
+        mov ax, 0x07
+        push ax
+        mov ax, game_divider
+        push ax
+        mov ax, [game_divider_length]
+        push ax
+        call print_string
+
+        pop ax                   ; restore the caller's ax
+        ret
+
+; Draw the four demo sprites and their labels.
+; Parameters: none.
+; Saves ax.
+show_demo_objects:
+        push ax                  ; save the register used to pass arguments
+
+        mov ax, 12              ; brown coin at column 12, row 6
+        push ax
+        mov ax, 6
+        push ax
+        mov ax, 0x06
+        push ax
+        mov ax, coin_small
+        push ax
+        call draw_object
+
+        mov ax, 28              ; gold coin at column 28, row 6
+        push ax
+        mov ax, 6
+        push ax
+        mov ax, 0x0e
+        push ax
+        mov ax, coin_gold
+        push ax
+        call draw_object
+
+        mov ax, 44              ; cyan diamond at column 44, row 6
+        push ax
+        mov ax, 6
+        push ax
+        mov ax, 0x0b
+        push ax
+        mov ax, diamond
+        push ax
+        call draw_object
+
+        mov ax, 60              ; red-backed bomb at column 60, row 6
+        push ax
+        mov ax, 6
+        push ax
+        mov ax, 0x4f
+        push ax
+        mov ax, bomb
+        push ax
+        call draw_object
+
+        mov ax, 11              ; label below the small coin
         push ax
         mov ax, 10
         push ax
-        mov ax, 0x07            ; normal text on black
+        mov ax, 0x07
         push ax
-        mov ax, 125             ; three-digit test
+        mov ax, small_coin_label
         push ax
-        call print_number
+        mov ax, [small_coin_label_length]
+        push ax
+        call print_string
 
-        mov ax, 10              ; second test number at column 10, row 11
+        mov ax, 26              ; label below the gold coin
         push ax
-        mov ax, 11
+        mov ax, 10
         push ax
-        mov ax, 0x07            ; normal text on black
+        mov ax, 0x07
         push ax
-        mov ax, 0               ; one-digit test
+        mov ax, gold_coin_label
         push ax
-        call print_number
+        mov ax, [gold_coin_label_length]
+        push ax
+        call print_string
 
-        mov ax, 10              ; third test number at column 10, row 12
+        mov ax, 42              ; label below the diamond
         push ax
-        mov ax, 12
+        mov ax, 10
         push ax
-        mov ax, 0x07            ; normal text on black
+        mov ax, 0x07
         push ax
-        mov ax, 45821           ; five-digit test
+        mov ax, diamond_label
         push ax
-        call print_number
+        mov ax, [diamond_label_length]
+        push ax
+        call print_string
 
-        mov ax, 10              ; show the starting time at column 10, row 14
+        mov ax, 59              ; label below the bomb
+        push ax
+        mov ax, 10
+        push ax
+        mov ax, 0x07
+        push ax
+        mov ax, bomb_label
+        push ax
+        mov ax, [bomb_label_length]
+        push ax
+        call print_string
+
+        pop ax                   ; restore the caller's ax
+        ret
+
+; Draw the complete static game screen.
+; Parameters: none.
+; Saves ax.
+show_game_screen:
+        push ax                  ; save the register used to pass arguments
+
+        call clear_screen        ; start with a blank screen
+        call draw_hud            ; draw the timer and score
+        call show_demo_objects   ; show the four objects and their labels
+
+        mov ax, 16              ; demo message at column 16, row 14
         push ax
         mov ax, 14
         push ax
-        mov ax, 0x0f            ; bright white on black
+        mov ax, 0x07
         push ax
-        mov ax, [time_left]     ; 120 seconds should show as 02:00
+        mov ax, demo_prompt
         push ax
-        call print_time
+        mov ax, [demo_prompt_length]
+        push ax
+        call print_string
 
-        mov ax, 10              ; second time test at column 10, row 15
-        push ax
-        mov ax, 15
-        push ax
-        mov ax, 0x0f            ; bright white on black
-        push ax
-        mov ax, 75              ; should show as 01:15
-        push ax
-        call print_time
-
-        mov ax, 10              ; third time test at column 10, row 16
-        push ax
-        mov ax, 16
-        push ax
-        mov ax, 0x0f            ; bright white on black
-        push ax
-        mov ax, 9               ; should show as 00:09
-        push ax
-        call print_time
-
-        mov ax, 12              ; small coin starts at column 12, row 6
-        push ax
-        mov ax, 6
-        push ax
-        mov ax, 0x06            ; brown on black
-        push ax
-        mov ax, coin_small      ; address of the small coin sprite
-        push ax
-        call draw_object
-
-        mov ax, 28              ; gold coin starts at column 28, row 6
-        push ax
-        mov ax, 6
-        push ax
-        mov ax, 0x0e            ; bright yellow on black
-        push ax
-        mov ax, coin_gold       ; address of the gold coin sprite
-        push ax
-        call draw_object
-
-        mov ax, 44              ; diamond starts at column 44, row 6
-        push ax
-        mov ax, 6
-        push ax
-        mov ax, 0x0b            ; bright cyan on black
-        push ax
-        mov ax, diamond         ; address of the diamond sprite
-        push ax
-        call draw_object
-
-        mov ax, 60              ; bomb starts at column 60, row 6
-        push ax
-        mov ax, 6
-        push ax
-        mov ax, 0x4f            ; bright white on red
-        push ax
-        mov ax, bomb            ; address of the bomb sprite
-        push ax
-        call draw_object
-
-        mov ax, 38              ; bucket starts at column 38, row 22
+        mov ax, 38              ; green bucket centered at the bottom
         push ax
         mov ax, 22
         push ax
-        mov ax, 0x0a            ; bright green on black
+        mov ax, 0x0a
         push ax
-        mov ax, bucket          ; address of the nine bucket characters
+        mov ax, bucket
         push ax
         call draw_object
+
+        pop ax                   ; restore the caller's ax
+        ret
+
+start:
+        call show_game_screen   ; show the game screen for this step
 
         mov ax, 0x4c00          ; choose the DOS exit service with exit code 0
         int 0x21                ; return to the DOS prompt
