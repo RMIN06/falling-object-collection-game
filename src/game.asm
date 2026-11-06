@@ -3,6 +3,7 @@
 
 game_title:        db 'COIN CATCH' ; title text
 game_title_length: dw 10           ; number of characters in the title
+time_left:         dw 120          ; two minutes in seconds
 
 ; Clear the 80-column, 25-row text screen.
 ; Parameters: none.
@@ -118,6 +119,62 @@ write_number_digit:
         pop bp
         ret 8                   ; remove the four two-byte parameters
 
+; Print remaining time from 0 to 5999 seconds as mm:ss.
+; Push x, y, attribute, and seconds in that order.
+; Saves bp, es, ax, bx, dx, and di.
+print_time:
+        push bp                 ; set up bp to read the parameters
+        mov bp, sp
+        push es                 ; save the other registers we use
+        push ax
+        push bx
+        push dx
+        push di
+
+        mov ax, 0xb800          ; point es to color text video memory
+        mov es, ax
+        mov al, 80              ; each row has 80 columns
+        mul byte [bp+8]         ; multiply by y to reach the start of the row
+        add ax, [bp+10]         ; add x to reach the requested column
+        shl ax, 1               ; each screen cell takes two bytes
+        mov di, ax              ; di points to the first screen cell
+
+        mov ax, [bp+4]          ; load the total seconds
+        mov dx, 0               ; clear the high word before dividing
+        mov bx, 60              ; there are 60 seconds in one minute
+        div bx                  ; ax gets minutes, dx gets leftover seconds
+        push dx                 ; keep the seconds until after the colon
+
+        mov bl, 10              ; divide minutes into tens and ones
+        div bl                  ; al gets tens, ah gets ones
+        mov dl, ah              ; keep the ones digit before setting the color
+        mov ah, [bp+6]          ; use the same attribute for all five characters
+        add al, 0x30            ; turn the tens digit into ASCII and write it
+        mov [es:di], ax
+        mov al, dl              ; turn the ones digit into ASCII and write it
+        add al, 0x30
+        mov [es:di+2], ax       ; one cell to the right of the tens digit
+        mov al, ':'             ; put the colon between minutes and seconds
+        mov [es:di+4], ax
+
+        pop ax                  ; get the leftover seconds back
+        div bl                  ; al gets tens, ah gets ones
+        mov dl, ah              ; keep the ones digit before setting the color
+        mov ah, [bp+6]
+        add al, 0x30            ; turn the tens digit into ASCII and write it
+        mov [es:di+6], ax       ; first cell after the colon
+        mov al, dl              ; turn the ones digit into ASCII and write it
+        add al, 0x30
+        mov [es:di+8], ax       ; last cell of the time display
+
+        pop di                  ; restore the registers in reverse order
+        pop dx
+        pop bx
+        pop ax
+        pop es
+        pop bp
+        ret 8                   ; remove the four two-byte parameters
+
 start:
         call clear_screen       ; clear the screen before drawing the title
 
@@ -162,6 +219,36 @@ start:
         mov ax, 45821           ; five-digit test
         push ax
         call print_number
+
+        mov ax, 10              ; show the starting time at column 10, row 14
+        push ax
+        mov ax, 14
+        push ax
+        mov ax, 0x0f            ; bright white on black
+        push ax
+        mov ax, [time_left]     ; 120 seconds should show as 02:00
+        push ax
+        call print_time
+
+        mov ax, 10              ; second time test at column 10, row 15
+        push ax
+        mov ax, 15
+        push ax
+        mov ax, 0x0f            ; bright white on black
+        push ax
+        mov ax, 75              ; should show as 01:15
+        push ax
+        call print_time
+
+        mov ax, 10              ; third time test at column 10, row 16
+        push ax
+        mov ax, 16
+        push ax
+        mov ax, 0x0f            ; bright white on black
+        push ax
+        mov ax, 9               ; should show as 00:09
+        push ax
+        call print_time
 
         mov ax, 0x4c00          ; choose the DOS exit service with exit code 0
         int 0x21                ; return to the DOS prompt

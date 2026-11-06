@@ -158,7 +158,7 @@ Tick a box here when the step is done and committed. Commit wording is in `docs/
 - [x] **Step 0: project setup.** Run `git init` if there is no repo yet, then install the commit hook from `docs/COMMIT_GUIDE.md`. The `.gitignore` and `README.md` are already provided. Create `src/game.asm` with only the skeleton from `ASSEMBLY_RULES.md` section 1 so it assembles and exits. *Student sees:* nothing, the program just returns to DOS.
 - [x] **Step 1: `clear_screen`.** Fill all 2000 cells with a space and attribute `0x07`. Test by calling it from `start:`. *Student sees:* a blank screen.
 - [x] **Step 2: `print_string`.** Add the five-parameter routine. Test by printing `COIN CATCH` in yellow at (35, 4). *Student sees:* the title in the middle.
-- [ ] **Step 3: `print_number`.** Print `125` at (10, 10), then `0` and `45821` to prove one-digit and five-digit numbers work. *Student sees:* the numbers.
+- [x] **Step 3: `print_number`.** Print `125` at (10, 10), then `0` and `45821` to prove one-digit and five-digit numbers work. *Student sees:* the numbers.
 - [ ] **Step 4: `print_time`.** Add `time_left` and print `120` as `02:00`, then test `75` as `01:15` and `9` as `00:09`. *Student sees:* correctly formatted times.
 - [ ] **Step 5: `draw_object` with the bucket.** Add the `bucket` sprite and draw it at (38, 22). *Student sees:* a green 3x3 bucket at the bottom center.
 - [ ] **Step 6: the other sprites.** Add `coin_small`, `coin_gold`, `diamond`, `bomb`. Draw all five in a quick test. Check all five fit in 3x3 and look different. *Student sees:* five distinct objects.
