@@ -68,6 +68,56 @@ print_string_done:
         pop bp
         ret 10                  ; remove the five two-byte parameters
 
+; Print an unsigned number at a screen position with the given color.
+; Push x, y, attribute, and number in that order.
+; Saves bp, es, ax, bx, cx, dx, and di.
+print_number:
+        push bp                 ; set up bp to read the parameters
+        mov bp, sp
+        push es                 ; save the other registers we use
+        push ax
+        push bx
+        push cx
+        push dx
+        push di
+
+        mov ax, 0xb800          ; point es to color text video memory
+        mov es, ax
+        mov al, 80              ; each row has 80 columns
+        mul byte [bp+8]         ; multiply by y to reach the start of the row
+        add ax, [bp+10]         ; add x to reach the requested column
+        shl ax, 1               ; each screen cell takes two bytes
+        mov di, ax              ; di points to the first screen cell
+
+        mov ax, [bp+4]          ; start with the number to print
+        mov bx, 10              ; divide by ten to get one decimal digit
+        mov cx, 0               ; no digits on the stack yet
+
+next_number_digit:
+        mov dx, 0               ; clear the high word before dividing
+        div bx                  ; ax gets the quotient, dx gets the digit
+        add dl, 0x30            ; turn the digit into an ASCII character
+        push dx                 ; save the character for printing in reverse order
+        inc cx                  ; count this digit
+        cmp ax, 0               ; see if there are any digits left
+        jne next_number_digit
+
+write_number_digit:
+        pop dx                  ; take the next digit, starting at the left
+        mov dh, [bp+6]          ; put the attribute in the high byte
+        mov [es:di], dx         ; write the digit and attribute together
+        add di, 2               ; move to the next screen cell
+        loop write_number_digit
+
+        pop di                  ; restore the registers in reverse order
+        pop dx
+        pop cx
+        pop bx
+        pop ax
+        pop es
+        pop bp
+        ret 8                   ; remove the four two-byte parameters
+
 start:
         call clear_screen       ; clear the screen before drawing the title
 
@@ -82,6 +132,36 @@ start:
         mov ax, [game_title_length] ; number of characters to print
         push ax
         call print_string       ; draw the title
+
+        mov ax, 10              ; first test number at column 10, row 10
+        push ax
+        mov ax, 10
+        push ax
+        mov ax, 0x07            ; normal text on black
+        push ax
+        mov ax, 125             ; three-digit test
+        push ax
+        call print_number
+
+        mov ax, 10              ; second test number at column 10, row 11
+        push ax
+        mov ax, 11
+        push ax
+        mov ax, 0x07            ; normal text on black
+        push ax
+        mov ax, 0               ; one-digit test
+        push ax
+        call print_number
+
+        mov ax, 10              ; third test number at column 10, row 12
+        push ax
+        mov ax, 12
+        push ax
+        mov ax, 0x07            ; normal text on black
+        push ax
+        mov ax, 45821           ; five-digit test
+        push ax
+        call print_number
 
         mov ax, 0x4c00          ; choose the DOS exit service with exit code 0
         int 0x21                ; return to the DOS prompt
