@@ -162,7 +162,7 @@ Tick a box here when the step is done and committed. Commit wording is in `docs/
 - [x] **Step 4: `print_time`.** Add `time_left` and print `120` as `02:00`, then test `75` as `01:15` and `9` as `00:09`. *Student sees:* correctly formatted times.
 - [x] **Step 5: `draw_object` with the bucket.** Add the `bucket` sprite and draw it at (38, 22). *Student sees:* a green 3x3 bucket at the bottom center.
 - [x] **Step 6: the other sprites.** Add `coin_small`, `coin_gold`, `diamond`, `bomb`. Draw all five in a quick test. Check all five fit in 3x3 and look different. *Student sees:* five distinct objects.
-- [ ] **Step 7: game screen.** Write `draw_hud`, `show_demo_objects` and `show_game_screen` following section 4. *Student sees:* the full game screen with timer `02:00`, score `0` at the top-right, the four demo objects with labels, and the bucket.
+- [x] **Step 7: game screen.** Write `draw_hud`, `show_demo_objects` and `show_game_screen` following section 4. *Student sees:* the full game screen with timer `02:00`, score `0` at the top-right, the four demo objects with labels, and the bucket.
 - [ ] **Step 8: start screen.** Write `wait_for_enter` and `show_start_screen`. *Student sees:* the title screen, and nothing happens until Enter is pressed.
 - [ ] **Step 9: end screen.** Write `show_end_screen`. *Student sees:* GAME OVER and the final score.
 - [ ] **Step 10: connect the flow.** In `start:` call: `show_start_screen`, `wait_for_enter`, `show_game_screen`, `wait_for_enter`, set `score` to the demo value `125`, `show_end_screen`, `wait_for_enter`, exit. *Student sees:* the whole Phase 1 flow from start to end.

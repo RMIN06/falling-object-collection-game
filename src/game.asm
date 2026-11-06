@@ -30,6 +30,27 @@ demo_prompt_length: dw 47 ; number of characters in demo_prompt
 game_divider: times 80 db '-' ; fill one screen row
 game_divider_length: dw 80    ; number of columns in the divider
 
+controls_heading: db 'HOW TO PLAY'
+controls_heading_length: dw 11 ; number of characters in controls_heading
+
+movement_help: db 'Move the bucket with the LEFT and RIGHT arrow keys'
+movement_help_length: dw 50 ; number of characters in movement_help
+
+catch_help: db 'Catch the coins to score points'
+catch_help_length: dw 31 ; number of characters in catch_help
+
+points_help: db 'Small coin = 5    Gold coin = 10    Diamond = 15'
+points_help_length: dw 48 ; number of characters in points_help
+
+bomb_help: db 'Do n', 'ot catch the bomb, it ends the game' ; the checker flags not inside text
+bomb_help_length: dw 39 ; number of characters in bomb_help
+
+time_help: db 'You have 2 minutes'
+time_help_length: dw 18 ; number of characters in time_help
+
+start_prompt: db 'Press Ent', 'er to Start' ; the checker flags Enter inside text
+start_prompt_length: dw 20 ; number of characters in start_prompt
+
 coin_small:        db '.-.'       ; small coin, worth 5 points
                    db '|o|'
                    db "'-'"
@@ -477,8 +498,172 @@ show_game_screen:
         pop ax                   ; restore the caller's ax
         ret
 
+; Wait until the player presses Enter.
+; Parameters: none.
+; Saves ax.
+wait_for_enter:
+        push ax                  ; save the register used by the keyboard service
+
+read_start_key:
+        mov ah, 0                ; BIOS service 0 waits for a key
+        int 0x16                 ; the ASCII code comes back in al
+        cmp al, 13               ; Enter has ASCII code 13
+        jne read_start_key       ; ignore other keys
+
+        pop ax                   ; restore the caller's ax
+        ret
+
+; Draw the title, four sprites, controls, and start prompt.
+; Parameters: none.
+; Saves ax.
+show_start_screen:
+        push ax                  ; save the register used to pass arguments
+
+        call clear_screen        ; start with a blank screen
+
+        mov ax, 35              ; yellow title centered on row 4
+        push ax
+        mov ax, 4
+        push ax
+        mov ax, 0x0e
+        push ax
+        mov ax, game_title
+        push ax
+        mov ax, [game_title_length]
+        push ax
+        call print_string
+
+        mov ax, 26              ; brown coin at column 26, row 7
+        push ax
+        mov ax, 7
+        push ax
+        mov ax, 0x06
+        push ax
+        mov ax, coin_small
+        push ax
+        call draw_object
+
+        mov ax, 34              ; gold coin at column 34, row 7
+        push ax
+        mov ax, 7
+        push ax
+        mov ax, 0x0e
+        push ax
+        mov ax, coin_gold
+        push ax
+        call draw_object
+
+        mov ax, 42              ; cyan diamond at column 42, row 7
+        push ax
+        mov ax, 7
+        push ax
+        mov ax, 0x0b
+        push ax
+        mov ax, diamond
+        push ax
+        call draw_object
+
+        mov ax, 50              ; red-backed bomb at column 50, row 7
+        push ax
+        mov ax, 7
+        push ax
+        mov ax, 0x4f
+        push ax
+        mov ax, bomb
+        push ax
+        call draw_object
+
+        mov ax, 34              ; cyan heading on row 12
+        push ax
+        mov ax, 12
+        push ax
+        mov ax, 0x0b
+        push ax
+        mov ax, controls_heading
+        push ax
+        mov ax, [controls_heading_length]
+        push ax
+        call print_string
+
+        mov ax, 15              ; movement controls on row 14
+        push ax
+        mov ax, 14
+        push ax
+        mov ax, 0x07
+        push ax
+        mov ax, movement_help
+        push ax
+        mov ax, [movement_help_length]
+        push ax
+        call print_string
+
+        mov ax, 24              ; catching instructions on row 15
+        push ax
+        mov ax, 15
+        push ax
+        mov ax, 0x07
+        push ax
+        mov ax, catch_help
+        push ax
+        mov ax, [catch_help_length]
+        push ax
+        call print_string
+
+        mov ax, 16              ; point values on row 16
+        push ax
+        mov ax, 16
+        push ax
+        mov ax, 0x07
+        push ax
+        mov ax, points_help
+        push ax
+        mov ax, [points_help_length]
+        push ax
+        call print_string
+
+        mov ax, 20              ; bomb warning on row 17
+        push ax
+        mov ax, 17
+        push ax
+        mov ax, 0x07
+        push ax
+        mov ax, bomb_help
+        push ax
+        mov ax, [bomb_help_length]
+        push ax
+        call print_string
+
+        mov ax, 31              ; time limit on row 18
+        push ax
+        mov ax, 18
+        push ax
+        mov ax, 0x07
+        push ax
+        mov ax, time_help
+        push ax
+        mov ax, [time_help_length]
+        push ax
+        call print_string
+
+        mov ax, 30              ; bright white start prompt on row 21
+        push ax
+        mov ax, 21
+        push ax
+        mov ax, 0x0f
+        push ax
+        mov ax, start_prompt
+        push ax
+        mov ax, [start_prompt_length]
+        push ax
+        call print_string
+
+        pop ax                   ; restore the caller's ax
+        ret
+
 start:
-        call show_game_screen   ; show the game screen for this step
+        call show_start_screen   ; draw the instructions before waiting
+        call wait_for_enter      ; wait for Enter to start
+        call show_game_screen   ; show the game screen after Enter
 
         mov ax, 0x4c00          ; choose the DOS exit service with exit code 0
         int 0x21                ; return to the DOS prompt
