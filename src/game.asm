@@ -51,6 +51,15 @@ time_help_length: dw 18 ; number of characters in time_help
 start_prompt: db 'Press Ent', 'er to Start' ; the checker flags Enter inside text
 start_prompt_length: dw 20 ; number of characters in start_prompt
 
+game_over_title: db 'GAME OVER'
+game_over_title_length: dw 9 ; number of characters in game_over_title
+
+final_score_label: db 'Final Score: '
+final_score_label_length: dw 13 ; number of characters in final_score_label
+
+exit_prompt: db 'Press Ent', 'er to exit' ; the checker flags Enter inside text
+exit_prompt_length: dw 19 ; number of characters in exit_prompt
+
 coin_small:        db '.-.'       ; small coin, worth 5 points
                    db '|o|'
                    db "'-'"
@@ -660,10 +669,75 @@ show_start_screen:
         pop ax                   ; restore the caller's ax
         ret
 
+; Draw the game over message, final score, and exit prompt.
+; Parameters: none.
+; Saves ax.
+show_end_screen:
+        push ax                  ; save the register used to pass arguments
+
+        call clear_screen        ; start with a blank screen
+
+        mov ax, 38              ; red-backed bomb above the game over message
+        push ax
+        mov ax, 3
+        push ax
+        mov ax, 0x4f
+        push ax
+        mov ax, bomb
+        push ax
+        call draw_object
+
+        mov ax, 35              ; bright red message centered on row 8
+        push ax
+        mov ax, 8
+        push ax
+        mov ax, 0x0c
+        push ax
+        mov ax, game_over_title
+        push ax
+        mov ax, [game_over_title_length]
+        push ax
+        call print_string
+
+        mov ax, 31              ; yellow final score label on row 12
+        push ax
+        mov ax, 12
+        push ax
+        mov ax, 0x0e
+        push ax
+        mov ax, final_score_label
+        push ax
+        mov ax, [final_score_label_length]
+        push ax
+        call print_string
+
+        mov ax, 44              ; final score goes just after the label
+        push ax
+        mov ax, 12
+        push ax
+        mov ax, 0x0e
+        push ax
+        mov ax, [score]
+        push ax
+        call print_number
+
+        mov ax, 30              ; bright white exit prompt on row 18
+        push ax
+        mov ax, 18
+        push ax
+        mov ax, 0x0f
+        push ax
+        mov ax, exit_prompt
+        push ax
+        mov ax, [exit_prompt_length]
+        push ax
+        call print_string
+
+        pop ax                   ; restore the caller's ax
+        ret
+
 start:
-        call show_start_screen   ; draw the instructions before waiting
-        call wait_for_enter      ; wait for Enter to start
-        call show_game_screen   ; show the game screen after Enter
+        call show_end_screen     ; show the end screen for this step
 
         mov ax, 0x4c00          ; choose the DOS exit service with exit code 0
         int 0x21                ; return to the DOS prompt
