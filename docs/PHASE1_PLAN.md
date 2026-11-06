@@ -155,7 +155,7 @@ wait_for_enter:
 
 Tick a box here when the step is done and committed. Commit wording is in `docs/COMMIT_GUIDE.md`, step numbers match.
 
-- [ ] **Step 0: project setup.** Run `git init` if there is no repo yet, then install the commit hook from `docs/COMMIT_GUIDE.md`. The `.gitignore` and `README.md` are already provided. Create `src/game.asm` with only the skeleton from `ASSEMBLY_RULES.md` section 1 so it assembles and exits. *Student sees:* nothing, the program just returns to DOS.
+- [x] **Step 0: project setup.** Run `git init` if there is no repo yet, then install the commit hook from `docs/COMMIT_GUIDE.md`. The `.gitignore` and `README.md` are already provided. Create `src/game.asm` with only the skeleton from `ASSEMBLY_RULES.md` section 1 so it assembles and exits. *Student sees:* nothing, the program just returns to DOS.
 - [ ] **Step 1: `clear_screen`.** Fill all 2000 cells with a space and attribute `0x07`. Test by calling it from `start:`. *Student sees:* a blank screen.
 - [ ] **Step 2: `print_string`.** Add the five-parameter routine. Test by printing `COIN CATCH` in yellow at (35, 4). *Student sees:* the title in the middle.
 - [ ] **Step 3: `print_number`.** Print `125` at (10, 10), then `0` and `45821` to prove one-digit and five-digit numbers work. *Student sees:* the numbers.
