@@ -375,7 +375,7 @@ draw_hud:
         pop ax                   ; restore the caller's ax
         ret
 
-; Draw the four demo sprites and their labels.
+; Draw the four demo sprites, their labels, and the demo prompt.
 ; Parameters: none.
 ; Saves ax.
 show_demo_objects:
@@ -469,19 +469,6 @@ show_demo_objects:
         push ax
         call print_string
 
-        pop ax                   ; restore the caller's ax
-        ret
-
-; Draw the complete static game screen.
-; Parameters: none.
-; Saves ax.
-show_game_screen:
-        push ax                  ; save the register used to pass arguments
-
-        call clear_screen        ; start with a blank screen
-        call draw_hud            ; draw the timer and score
-        call show_demo_objects   ; show the four objects and their labels
-
         mov ax, 16              ; demo message at column 16, row 14
         push ax
         mov ax, 14
@@ -493,6 +480,19 @@ show_game_screen:
         mov ax, [demo_prompt_length]
         push ax
         call print_string
+
+        pop ax                   ; restore the caller's ax
+        ret
+
+; Draw the complete static game screen.
+; Parameters: none.
+; Saves ax.
+show_game_screen:
+        push ax                  ; save the register used to pass arguments
+
+        call clear_screen        ; start with a blank screen
+        call draw_hud            ; draw the timer and score
+        call show_demo_objects   ; draw the demo objects, labels, and prompt
 
         mov ax, 38              ; green bucket centered at the bottom
         push ax
@@ -513,11 +513,11 @@ show_game_screen:
 wait_for_enter:
         push ax                  ; save the register used by the keyboard service
 
-read_start_key:
+read_next_key:
         mov ah, 0                ; BIOS service 0 waits for a key
         int 0x16                 ; the ASCII code comes back in al
         cmp al, 13               ; Enter has ASCII code 13
-        jne read_start_key       ; ignore other keys
+        jne read_next_key        ; ignore other keys
 
         pop ax                   ; restore the caller's ax
         ret

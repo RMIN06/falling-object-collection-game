@@ -165,21 +165,21 @@ Tick a box here when the step is done and committed. Commit wording is in `docs/
 - [x] **Step 7: game screen.** Write `draw_hud`, `show_demo_objects` and `show_game_screen` following section 4. *Student sees:* the full game screen with timer `02:00`, score `0` at the top-right, the four demo objects with labels, and the bucket.
 - [x] **Step 8: start screen.** Write `wait_for_enter` and `show_start_screen`. *Student sees:* the title screen, and nothing happens until Enter is pressed.
 - [x] **Step 9: end screen.** Write `show_end_screen`. *Student sees:* GAME OVER and the final score.
-- [ ] **Step 10: connect the flow.** In `start:` call: `show_start_screen`, `wait_for_enter`, `show_game_screen`, `wait_for_enter`, set `score` to the demo value `125`, `show_end_screen`, `wait_for_enter`, exit. *Student sees:* the whole Phase 1 flow from start to end.
+- [x] **Step 10: connect the flow.** In `start:` call: `show_start_screen`, `wait_for_enter`, `show_game_screen`, `wait_for_enter`, set `score` to the demo value `125`, `show_end_screen`, `wait_for_enter`, exit. *Student sees:* the whole Phase 1 flow from start to end.
 - [ ] **Step 11: final check.** Read the whole file once. Make sure every subroutine has its comment block, names are meaningful, and `check_rules.sh` prints `OK`. Walk through the checklist below and tell the student which items pass. Update `README.md` if anything changed. *Student sees:* the same game, tidier code.
 
 ## 8. Phase 1 acceptance checklist
 
 | # | Teacher requirement | Where it is covered | Done |
 |---|---|---|---|
-| 1 | All three object categories displayed | Game screen: score objects, bucket, bomb | [ ] |
-| 2 | Every object in a 3x3 space | `draw_object` and the 3-line sprites | [ ] |
-| 3 | Timer on screen showing remaining time | `print_time` in `draw_hud`, shows `02:00` | [ ] |
-| 4 | Live score display present | `print_number` in `draw_hud` at top-right, and on the end screen | [ ] |
-| 5 | Start screen with name, instructions, "Press Enter to Start", and the game begins only on Enter | `show_start_screen` and `wait_for_enter` | [ ] |
-| 6 | End screen showing game over and final score | `show_end_screen` | [ ] |
-| 7 | Assembles with no errors or warnings | `nasm` output | [ ] |
-| 8 | Nothing outside the book | `bash tools/check_rules.sh` says `OK` | [ ] |
+| 1 | All three object categories displayed | Game screen: score objects, bucket, bomb | [x] |
+| 2 | Every object in a 3x3 space | `draw_object` and the 3-line sprites | [x] |
+| 3 | Timer on screen showing remaining time | `print_time` in `draw_hud`, shows `02:00` | [x] |
+| 4 | Live score display present | `print_number` in `draw_hud` at top-right, and on the end screen | [x] |
+| 5 | Start screen with name, instructions, "Press Enter to Start", and the game begins only on Enter | `show_start_screen` and `wait_for_enter` | [x] |
+| 6 | End screen showing game over and final score | `show_end_screen` | [x] |
+| 7 | Assembles with no errors or warnings | `nasm` output | [x] |
+| 8 | Nothing outside the book | `bash tools/check_rules.sh` says `OK` | [x] |
 
 ## 9. Not in Phase 1 (do not build, only keep in mind)
 
