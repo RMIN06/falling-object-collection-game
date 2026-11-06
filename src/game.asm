@@ -60,23 +60,23 @@ final_score_label_length: dw 13 ; number of characters in final_score_label
 exit_prompt: db 'Press Ent', 'er to exit' ; the checker flags Enter inside text
 exit_prompt_length: dw 19 ; number of characters in exit_prompt
 
-coin_small:        db '.-.'       ; small coin, worth 5 points
-                   db '|o|'
-                   db "'-'"
+coin_small:        db ' _ '       ; round copper coin, worth 5 points
+                   db '(o)'
+                   db ' - '
 
-coin_gold:         db '.-.'       ; gold coin, worth 10 points
+coin_gold:         db '/-\'       ; gold coin with a wider rim, worth 10 points
                    db '|$|'
-                   db "'-'"
+                   db '\-/'
 
-diamond:           db ' ^ '       ; diamond, worth 15 points
-                   db '< >'
-                   db ' v '
+diamond:           db ' _ '       ; flat-topped gem, worth 15 points
+                   db '/_\'
+                   db ' V '
 
-bomb:              db ' * '       ; bomb ends the game when caught
-                   db '(X)'
-                   db ' ~ '
+bomb:              db '  *'       ; lit fuse above the round bomb
+                   db ' / '
+                   db '(O)'
 
-bucket:            db '\ /'       ; bucket rim
+bucket:            db '==='       ; bucket rim
                    db '| |'       ; bucket sides
                    db '\_/'       ; bucket base
 
