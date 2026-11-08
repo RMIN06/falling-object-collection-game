@@ -536,5 +536,6 @@ start:
         call show_end_screen     ; show GAME OVER and the final score
         call wait_for_enter      ; wait for Enter before returning to DOS
 
+        call clear_screen        ; erase the game screen before returning to DOS
         mov ax, 0x4c00          ; choose the DOS exit service with exit code 0
         int 0x21                ; return to the DOS prompt
