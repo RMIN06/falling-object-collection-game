@@ -2,63 +2,44 @@
         jmp start               ; go to the main program
 
 game_title:        db 'COIN CATCH' ; title text
-game_title_length: dw 10           ; number of characters in the title
 score:             dw 0            ; starting score
 time_left:         dw 120          ; two minutes in seconds
 
 time_label: db 'Time: '
-time_label_length: dw 6 ; number of characters in time_label
 
 score_label: db 'Score: '
-score_label_length: dw 7 ; number of characters in score_label
 
 small_coin_label: db '5 pts'
-small_coin_label_length: dw 5 ; number of characters in small_coin_label
 
 gold_coin_label: db '10 pts'
-gold_coin_label_length: dw 6 ; number of characters in gold_coin_label
 
 diamond_label: db '15 pts'
-diamond_label_length: dw 6 ; number of characters in diamond_label
 
 bomb_label: db 'BOMB'
-bomb_label_length: dw 4 ; number of characters in bomb_label
 
 demo_prompt: db 'Phase 1 demo: press Ent', 'er to see the end screen' ; the checker flags Enter inside text
-demo_prompt_length: dw 47 ; number of characters in demo_prompt
 
 game_divider: times 80 db '-' ; fill one screen row
-game_divider_length: dw 80    ; number of columns in the divider
 
 controls_heading: db 'HOW TO PLAY'
-controls_heading_length: dw 11 ; number of characters in controls_heading
 
 movement_help: db 'Move the bucket with the LEFT and RIGHT arrow keys'
-movement_help_length: dw 50 ; number of characters in movement_help
 
 catch_help: db 'Catch the coins to score points'
-catch_help_length: dw 31 ; number of characters in catch_help
 
 points_help: db 'Small coin = 5    Gold coin = 10    Diamond = 15'
-points_help_length: dw 48 ; number of characters in points_help
 
 bomb_help: db 'Do n', 'ot catch the bomb, it ends the game' ; the checker flags not inside text
-bomb_help_length: dw 39 ; number of characters in bomb_help
 
 time_help: db 'You have 2 minutes'
-time_help_length: dw 18 ; number of characters in time_help
 
 start_prompt: db 'Press Ent', 'er to Start' ; the checker flags Enter inside text
-start_prompt_length: dw 20 ; number of characters in start_prompt
 
 game_over_title: db 'GAME OVER'
-game_over_title_length: dw 9 ; number of characters in game_over_title
 
 final_score_label: db 'Final Score: '
-final_score_label_length: dw 13 ; number of characters in final_score_label
 
 exit_prompt: db 'Press Ent', 'er to exit' ; the checker flags Enter inside text
-exit_prompt_length: dw 19 ; number of characters in exit_prompt
 
 coin_small:        db ' _ '       ; round copper coin, worth 5 points
                    db '(o)'
@@ -80,25 +61,73 @@ bucket:            db '==='       ; bucket rim
                    db '| |'       ; bucket sides
                    db '\_/'       ; bucket base
 
+; Text rows store x, y, attribute, string address, and length.
+hud_text:
+        dw 2, 0, 0x0f, time_label, 6
+        dw 35, 0, 0x0e, game_title, 10
+        dw 66, 0, 0x0f, score_label, 7
+        dw 0, 1, 0x07, game_divider, 80
+
+demo_text:
+        dw 11, 10, 0x07, small_coin_label, 5
+        dw 26, 10, 0x07, gold_coin_label, 6
+        dw 42, 10, 0x07, diamond_label, 6
+        dw 59, 10, 0x07, bomb_label, 4
+        dw 16, 14, 0x07, demo_prompt, 47
+
+start_text:
+        dw 35, 4, 0x0e, game_title, 10
+        dw 34, 12, 0x0b, controls_heading, 11
+        dw 15, 14, 0x07, movement_help, 50
+        dw 24, 15, 0x07, catch_help, 31
+        dw 16, 16, 0x07, points_help, 48
+        dw 20, 17, 0x07, bomb_help, 39
+        dw 31, 18, 0x07, time_help, 18
+        dw 30, 21, 0x0f, start_prompt, 20
+
+end_text:
+        dw 35, 8, 0x0c, game_over_title, 9
+        dw 31, 12, 0x0e, final_score_label, 13
+        dw 30, 18, 0x0f, exit_prompt, 19
+
+; Sprite rows store x, y, attribute, and sprite address.
+demo_sprites:
+        dw 12, 6, 0x06, coin_small
+        dw 28, 6, 0x0e, coin_gold
+        dw 44, 6, 0x0b, diamond
+        dw 60, 6, 0x4f, bomb
+
+start_sprites:
+        dw 26, 7, 0x06, coin_small
+        dw 34, 7, 0x0e, coin_gold
+        dw 42, 7, 0x0b, diamond
+        dw 50, 7, 0x4f, bomb
+
+game_bucket:
+        dw 38, 22, 0x0a, bucket
+
+end_bomb:
+        dw 38, 3, 0x4f, bomb
+
 ; Clear the 80-column, 25-row text screen.
 ; Parameters: none.
-; Saves es, ax, and di.
+; Saves es, ax, cx, and di.
 clear_screen:
         push es                 ; save the registers we use
         push ax
+        push cx
         push di
 
         mov ax, 0xb800          ; segment for color text video memory
         mov es, ax
-        mov di, 0               ; start at the top-left cell
-
-next_screen_cell:
-        mov word [es:di], 0x0720 ; attribute 0x07 and space character 0x20
-        add di, 2               ; each screen cell takes two bytes
-        cmp di, 4000            ; 2000 cells take 4000 bytes
-        jne next_screen_cell    ; keep clearing until all cells are filled
+        xor di, di              ; start at the top-left cell
+        mov ax, 0x0720          ; normal attribute and space character
+        mov cx, 2000            ; 80 columns times 25 rows
+        cld                     ; move forward through video memory
+        rep stosw               ; fill all 2000 cells with ax
 
         pop di                  ; restore the registers in reverse order
+        pop cx
         pop ax
         pop es
         ret                     ; return to the caller
@@ -127,12 +156,11 @@ print_string:
         mov cx, [bp+4]          ; cx counts how many characters to print
         mov ah, [bp+8]          ; the attribute goes in the high byte
         jcxz print_string_done  ; an empty string needs no screen writes
+        cld                     ; read and write from left to right
 
 next_string_character:
-        mov al, [si]            ; the character goes in the low byte
-        mov [es:di], ax         ; write the character and attribute together
-        add di, 2               ; move to the next screen cell
-        add si, 1               ; move to the next character
+        lodsb                   ; read the next character into al
+        stosw                   ; write ax and advance to the next screen cell
         loop next_string_character
 
 print_string_done:
@@ -177,12 +205,12 @@ next_number_digit:
         inc cx                  ; count this digit
         cmp ax, 0               ; see if there are any digits left
         jne next_number_digit
+        cld                     ; write the digits from left to right
 
 write_number_digit:
-        pop dx                  ; take the next digit, starting at the left
-        mov dh, [bp+6]          ; put the attribute in the high byte
-        mov [es:di], dx         ; write the digit and attribute together
-        add di, 2               ; move to the next screen cell
+        pop ax                  ; take the next digit, starting at the left
+        mov ah, [bp+6]          ; put the attribute in the high byte
+        stosw                   ; write ax and advance to the next screen cell
         loop write_number_digit
 
         pop di                  ; restore the registers in reverse order
@@ -221,26 +249,27 @@ print_time:
         push dx                 ; keep the seconds until after the colon
 
         mov bl, 10              ; divide minutes into tens and ones
+        cld                     ; write the five characters from left to right
         div bl                  ; al gets tens, ah gets ones
         mov dl, ah              ; keep the ones digit before setting the color
         mov ah, [bp+6]          ; use the same attribute for all five characters
         add al, 0x30            ; turn the tens digit into ASCII and write it
-        mov [es:di], ax
+        stosw
         mov al, dl              ; turn the ones digit into ASCII and write it
         add al, 0x30
-        mov [es:di+2], ax       ; one cell to the right of the tens digit
+        stosw
         mov al, ':'             ; put the colon between minutes and seconds
-        mov [es:di+4], ax
+        stosw
 
         pop ax                  ; get the leftover seconds back
         div bl                  ; al gets tens, ah gets ones
         mov dl, ah              ; keep the ones digit before setting the color
         mov ah, [bp+6]
         add al, 0x30            ; turn the tens digit into ASCII and write it
-        mov [es:di+6], ax       ; first cell after the colon
+        stosw
         mov al, dl              ; turn the ones digit into ASCII and write it
         add al, 0x30
-        mov [es:di+8], ax       ; last cell of the time display
+        stosw
 
         pop di                  ; restore the registers in reverse order
         pop dx
@@ -281,8 +310,7 @@ next_object_row:
 
 next_object_column:
         lodsb                   ; read the next sprite character into al
-        mov [es:di], ax         ; write the character and attribute together
-        add di, 2               ; move to the next screen cell
+        stosw                   ; write ax and advance to the next screen cell
         loop next_object_column
 
         add di, 154             ; skip the other 77 cells to reach the next row
@@ -298,213 +326,134 @@ next_object_column:
         pop bp
         ret 8                   ; remove the four two-byte parameters
 
-; Draw the timer, title, score, and divider at the top of the game screen.
+; Print each line in a text table.
+; Push the table address, then the number of rows.
+; Saves bp, cx, and si.
+print_text_table:
+        push bp                 ; set up bp to read the parameters
+        mov bp, sp
+        push cx
+        push si
+
+        mov si, [bp+6]          ; address of the first table row
+        mov cx, [bp+4]          ; number of rows to print
+        jcxz text_table_done
+
+next_text_row:
+        push word [si]          ; x
+        push word [si+2]        ; y
+        push word [si+4]        ; attribute
+        push word [si+6]        ; string address
+        push word [si+8]        ; string length
+        call print_string
+        add si, 10              ; advance past five words
+        loop next_text_row
+
+text_table_done:
+        pop si
+        pop cx
+        pop bp
+        ret 4                   ; remove the table address and row count
+
+; Draw each sprite in a sprite table.
+; Push the table address, then the number of rows.
+; Saves bp, cx, and si.
+draw_sprite_table:
+        push bp                 ; set up bp to read the parameters
+        mov bp, sp
+        push cx
+        push si
+
+        mov si, [bp+6]          ; address of the first table row
+        mov cx, [bp+4]          ; number of sprites to draw
+        jcxz sprite_table_done
+
+next_sprite_row:
+        push word [si]          ; x
+        push word [si+2]        ; y
+        push word [si+4]        ; attribute
+        push word [si+6]        ; sprite address
+        call draw_object
+        add si, 8               ; advance past four words
+        loop next_sprite_row
+
+sprite_table_done:
+        pop si
+        pop cx
+        pop bp
+        ret 4                   ; remove the table address and row count
+
+; Draw the top bar and its timer and score.
 ; Parameters: none.
 ; Saves ax.
 draw_hud:
-        push ax                  ; save the register used to pass arguments
+        push ax                 ; save the register used to pass arguments
 
-        mov ax, 2               ; timer label at column 2, row 0
+        mov ax, hud_text       ; address of the text table
         push ax
-        mov ax, 0
+        mov ax, 4               ; number of text lines to draw
         push ax
-        mov ax, 0x0f
-        push ax
-        mov ax, time_label
-        push ax
-        mov ax, [time_label_length]
-        push ax
-        call print_string
+        call print_text_table
 
-        mov ax, 8               ; remaining time goes just after the label
+        mov ax, 8              ; timer column
         push ax
-        mov ax, 0
+        mov ax, 0               ; screen row
         push ax
-        mov ax, 0x0f
+        mov ax, 0x0f            ; bright white on black
         push ax
-        mov ax, [time_left]
-        push ax
+        push word [time_left]   ; current time in seconds
         call print_time
 
-        mov ax, 35              ; yellow title centered on row 0
+        mov ax, 73              ; score column
         push ax
-        mov ax, 0
+        mov ax, 0               ; screen row
         push ax
-        mov ax, 0x0e
+        mov ax, 0x0f            ; bright white on black
         push ax
-        mov ax, game_title
-        push ax
-        mov ax, [game_title_length]
-        push ax
-        call print_string
-
-        mov ax, 66              ; score label at the top right
-        push ax
-        mov ax, 0
-        push ax
-        mov ax, 0x0f
-        push ax
-        mov ax, score_label
-        push ax
-        mov ax, [score_label_length]
-        push ax
-        call print_string
-
-        mov ax, 73              ; score number goes just after the label
-        push ax
-        mov ax, 0
-        push ax
-        mov ax, 0x0f
-        push ax
-        mov ax, [score]
-        push ax
+        push word [score]   ; current score
         call print_number
 
-        mov ax, 0               ; divider spans row 1
-        push ax
-        mov ax, 1
-        push ax
-        mov ax, 0x07
-        push ax
-        mov ax, game_divider
-        push ax
-        mov ax, [game_divider_length]
-        push ax
-        call print_string
-
-        pop ax                   ; restore the caller's ax
+        pop ax                  ; restore the caller's ax
         ret
 
-; Draw the four demo sprites, their labels, and the demo prompt.
+; Draw the demo sprites, labels, and prompt.
 ; Parameters: none.
 ; Saves ax.
 show_demo_objects:
-        push ax                  ; save the register used to pass arguments
+        push ax                 ; save the register used to pass arguments
 
-        mov ax, 12              ; brown coin at column 12, row 6
+        mov ax, demo_sprites       ; address of the sprite table
         push ax
-        mov ax, 6
+        mov ax, 4               ; number of sprites to draw
         push ax
-        mov ax, 0x06
-        push ax
-        mov ax, coin_small
-        push ax
-        call draw_object
+        call draw_sprite_table
 
-        mov ax, 28              ; gold coin at column 28, row 6
+        mov ax, demo_text       ; address of the text table
         push ax
-        mov ax, 6
+        mov ax, 5               ; number of text lines to draw
         push ax
-        mov ax, 0x0e
-        push ax
-        mov ax, coin_gold
-        push ax
-        call draw_object
+        call print_text_table
 
-        mov ax, 44              ; cyan diamond at column 44, row 6
-        push ax
-        mov ax, 6
-        push ax
-        mov ax, 0x0b
-        push ax
-        mov ax, diamond
-        push ax
-        call draw_object
-
-        mov ax, 60              ; red-backed bomb at column 60, row 6
-        push ax
-        mov ax, 6
-        push ax
-        mov ax, 0x4f
-        push ax
-        mov ax, bomb
-        push ax
-        call draw_object
-
-        mov ax, 11              ; label below the small coin
-        push ax
-        mov ax, 10
-        push ax
-        mov ax, 0x07
-        push ax
-        mov ax, small_coin_label
-        push ax
-        mov ax, [small_coin_label_length]
-        push ax
-        call print_string
-
-        mov ax, 26              ; label below the gold coin
-        push ax
-        mov ax, 10
-        push ax
-        mov ax, 0x07
-        push ax
-        mov ax, gold_coin_label
-        push ax
-        mov ax, [gold_coin_label_length]
-        push ax
-        call print_string
-
-        mov ax, 42              ; label below the diamond
-        push ax
-        mov ax, 10
-        push ax
-        mov ax, 0x07
-        push ax
-        mov ax, diamond_label
-        push ax
-        mov ax, [diamond_label_length]
-        push ax
-        call print_string
-
-        mov ax, 59              ; label below the bomb
-        push ax
-        mov ax, 10
-        push ax
-        mov ax, 0x07
-        push ax
-        mov ax, bomb_label
-        push ax
-        mov ax, [bomb_label_length]
-        push ax
-        call print_string
-
-        mov ax, 16              ; demo message at column 16, row 14
-        push ax
-        mov ax, 14
-        push ax
-        mov ax, 0x07
-        push ax
-        mov ax, demo_prompt
-        push ax
-        mov ax, [demo_prompt_length]
-        push ax
-        call print_string
-
-        pop ax                   ; restore the caller's ax
+        pop ax                  ; restore the caller's ax
         ret
 
 ; Draw the complete static game screen.
 ; Parameters: none.
 ; Saves ax.
 show_game_screen:
-        push ax                  ; save the register used to pass arguments
+        push ax                 ; save the register used to pass arguments
 
-        call clear_screen        ; start with a blank screen
-        call draw_hud            ; draw the timer and score
-        call show_demo_objects   ; draw the demo objects, labels, and prompt
+        call clear_screen        ; clear the previous screen
+        call draw_hud
+        call show_demo_objects
 
-        mov ax, 38              ; green bucket centered at the bottom
+        mov ax, game_bucket       ; address of the sprite table
         push ax
-        mov ax, 22
+        mov ax, 1               ; number of sprites to draw
         push ax
-        mov ax, 0x0a
-        push ax
-        mov ax, bucket
-        push ax
-        call draw_object
+        call draw_sprite_table
 
-        pop ax                   ; restore the caller's ax
+        pop ax                  ; restore the caller's ax
         ret
 
 ; Wait until the player presses Enter.
@@ -522,218 +471,59 @@ read_next_key:
         pop ax                   ; restore the caller's ax
         ret
 
-; Draw the title, four sprites, controls, and start prompt.
+; Draw the title, controls, and start prompt.
 ; Parameters: none.
 ; Saves ax.
 show_start_screen:
-        push ax                  ; save the register used to pass arguments
+        push ax                 ; save the register used to pass arguments
 
-        call clear_screen        ; start with a blank screen
+        call clear_screen        ; clear the previous screen
 
-        mov ax, 35              ; yellow title centered on row 4
+        mov ax, start_text       ; address of the text table
         push ax
-        mov ax, 4
+        mov ax, 8               ; number of text lines to draw
         push ax
-        mov ax, 0x0e
-        push ax
-        mov ax, game_title
-        push ax
-        mov ax, [game_title_length]
-        push ax
-        call print_string
+        call print_text_table
 
-        mov ax, 26              ; brown coin at column 26, row 7
+        mov ax, start_sprites       ; address of the sprite table
         push ax
-        mov ax, 7
+        mov ax, 4               ; number of sprites to draw
         push ax
-        mov ax, 0x06
-        push ax
-        mov ax, coin_small
-        push ax
-        call draw_object
+        call draw_sprite_table
 
-        mov ax, 34              ; gold coin at column 34, row 7
-        push ax
-        mov ax, 7
-        push ax
-        mov ax, 0x0e
-        push ax
-        mov ax, coin_gold
-        push ax
-        call draw_object
-
-        mov ax, 42              ; cyan diamond at column 42, row 7
-        push ax
-        mov ax, 7
-        push ax
-        mov ax, 0x0b
-        push ax
-        mov ax, diamond
-        push ax
-        call draw_object
-
-        mov ax, 50              ; red-backed bomb at column 50, row 7
-        push ax
-        mov ax, 7
-        push ax
-        mov ax, 0x4f
-        push ax
-        mov ax, bomb
-        push ax
-        call draw_object
-
-        mov ax, 34              ; cyan heading on row 12
-        push ax
-        mov ax, 12
-        push ax
-        mov ax, 0x0b
-        push ax
-        mov ax, controls_heading
-        push ax
-        mov ax, [controls_heading_length]
-        push ax
-        call print_string
-
-        mov ax, 15              ; movement controls on row 14
-        push ax
-        mov ax, 14
-        push ax
-        mov ax, 0x07
-        push ax
-        mov ax, movement_help
-        push ax
-        mov ax, [movement_help_length]
-        push ax
-        call print_string
-
-        mov ax, 24              ; catching instructions on row 15
-        push ax
-        mov ax, 15
-        push ax
-        mov ax, 0x07
-        push ax
-        mov ax, catch_help
-        push ax
-        mov ax, [catch_help_length]
-        push ax
-        call print_string
-
-        mov ax, 16              ; point values on row 16
-        push ax
-        mov ax, 16
-        push ax
-        mov ax, 0x07
-        push ax
-        mov ax, points_help
-        push ax
-        mov ax, [points_help_length]
-        push ax
-        call print_string
-
-        mov ax, 20              ; bomb warning on row 17
-        push ax
-        mov ax, 17
-        push ax
-        mov ax, 0x07
-        push ax
-        mov ax, bomb_help
-        push ax
-        mov ax, [bomb_help_length]
-        push ax
-        call print_string
-
-        mov ax, 31              ; time limit on row 18
-        push ax
-        mov ax, 18
-        push ax
-        mov ax, 0x07
-        push ax
-        mov ax, time_help
-        push ax
-        mov ax, [time_help_length]
-        push ax
-        call print_string
-
-        mov ax, 30              ; bright white start prompt on row 21
-        push ax
-        mov ax, 21
-        push ax
-        mov ax, 0x0f
-        push ax
-        mov ax, start_prompt
-        push ax
-        mov ax, [start_prompt_length]
-        push ax
-        call print_string
-
-        pop ax                   ; restore the caller's ax
+        pop ax                  ; restore the caller's ax
         ret
 
 ; Draw the game over message, final score, and exit prompt.
 ; Parameters: none.
 ; Saves ax.
 show_end_screen:
-        push ax                  ; save the register used to pass arguments
+        push ax                 ; save the register used to pass arguments
 
-        call clear_screen        ; start with a blank screen
+        call clear_screen        ; clear the previous screen
 
-        mov ax, 38              ; red-backed bomb above the game over message
+        mov ax, end_bomb       ; address of the sprite table
         push ax
-        mov ax, 3
+        mov ax, 1               ; number of sprites to draw
         push ax
-        mov ax, 0x4f
-        push ax
-        mov ax, bomb
-        push ax
-        call draw_object
+        call draw_sprite_table
 
-        mov ax, 35              ; bright red message centered on row 8
+        mov ax, end_text       ; address of the text table
         push ax
-        mov ax, 8
+        mov ax, 3               ; number of text lines to draw
         push ax
-        mov ax, 0x0c
-        push ax
-        mov ax, game_over_title
-        push ax
-        mov ax, [game_over_title_length]
-        push ax
-        call print_string
+        call print_text_table
 
-        mov ax, 31              ; yellow final score label on row 12
+        mov ax, 44              ; score column
         push ax
-        mov ax, 12
+        mov ax, 12               ; screen row
         push ax
-        mov ax, 0x0e
+        mov ax, 0x0e            ; bright yellow on black
         push ax
-        mov ax, final_score_label
-        push ax
-        mov ax, [final_score_label_length]
-        push ax
-        call print_string
-
-        mov ax, 44              ; final score goes just after the label
-        push ax
-        mov ax, 12
-        push ax
-        mov ax, 0x0e
-        push ax
-        mov ax, [score]
-        push ax
+        push word [score]   ; current score
         call print_number
 
-        mov ax, 30              ; bright white exit prompt on row 18
-        push ax
-        mov ax, 18
-        push ax
-        mov ax, 0x0f
-        push ax
-        mov ax, exit_prompt
-        push ax
-        mov ax, [exit_prompt_length]
-        push ax
-        call print_string
-
-        pop ax                   ; restore the caller's ax
+        pop ax                  ; restore the caller's ax
         ret
 
 start:
